@@ -1,0 +1,64 @@
+{
+  "name": "isaac ros Development",
+  "build": {
+    "dockerfile": "Dockerfile",
+    "context": "."
+  },
+  "remoteUser": "admin",
+  "runArgs": [
+    "--privileged",
+    "--network=host",
+    "--ipc=host",
+    "--device-cgroup-rule=c *:* rwm",
+    "--device=/dev/snd",
+    "--group-add", "audio",
+    "--group-add", "dialout",
+    "--group-add", "video",
+    "--group-add", "plugdev",
+    "-v", "/var/lib/dbus:/var/lib/dbus",
+    "-v", "/var/run/dbus:/var/run/dbus",
+    "-v", "/run/user/1000/pulse:/run/user/1000/pulse",
+    "-v", "/dev/snd:/dev/snd",
+    "-v", "/run/user/1000:/run/user/1000",      
+    "-v", "/etc/machine-id:/etc/machine-id",
+    "-v", "${localEnv:HOME}/.config/pulse/cookie:/root/.config/pulse/cookie",
+    "-v", "/usr/share/alsa:/usr/share/alsa",
+    "-v", "/etc/asound.conf:/etc/asound.conf",
+    "-v", "/home/orin/study/llm/models:/home/admin/models",
+    "-v", "/home/orin/study/tmp:/workspaces/tmp",
+    "-e", "DISPLAY",
+    "-e", "QT_X11_NO_MITSHM=1",
+    "-e", "XDG_RUNTIME_DIR=/run/user/1000",
+    "-e", "AUDIO_GID=`getent group audio | cut -d: -f3`",
+    "-e", "NVIDIA_VISIBLE_DEVICES=all",
+    "-e", "NVIDIA_DRIVER_CAPABILITIES=all",
+    "-e", "ROS_DOMAIN_ID",
+    "-e", "USER",
+    "-e", "ISAAC_ROS_WS=/workspaces/isaac_ros-dev/isaac_ros_ws",
+    "-e", "HOST_USER_UID=`id -u`",
+    "-e", "HOST_USER_GID=`id -g`"
+  ],
+  "containerEnv": {
+    "DISPLAY": "${localEnv:DISPLAY}",
+    "WAYLAND_DISPLAY": "${localEnv:WAYLAND_DISPLAY}",
+    "XDG_RUNTIME_DIR": "${localEnv:XDG_RUNTIME_DIR}",
+    "PULSE_SERVER": "${localEnv:PULSE_SERVER}",
+    "LIBREALSENSE_VERSION": "2.55.1"
+  },
+  "mounts": [
+        // "source=/dev/bus/usb,target=/dev/bus/usb,type=bind"，
+        "source=/dev,target=/dev,type=bind"
+    ],
+  "workspaceMount": "source=${localWorkspaceFolder},target=/workspaces/isaac_ros-dev,type=bind",
+  "workspaceFolder": "/workspaces/isaac_ros-dev",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-python.python",
+        "ms-python.vscode-pylance",
+        "ms-python.debugpy",
+        "Alibaba-Cloud.tongyi-lingma"
+      ]
+    }
+  }
+}

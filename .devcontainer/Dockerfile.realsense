@@ -1,0 +1,61 @@
+# Copyright (c) 2023, NVIDIA CORPORATION.  All rights reserved.
+#
+# NVIDIA CORPORATION and its licensors retain all intellectual property
+# and proprietary rights in and to this software, related documentation
+# and any modifications thereto.  Any use, reproduction, disclosure or
+# distribution of this software and related documentation without an express
+# license agreement from NVIDIA CORPORATION is strictly prohibited.
+
+# Dockerfile for setting up Realsense driver
+#  https://github.com/jetsonhacks/installRealSenseSDK
+ARG BASE_IMAGE=isaac_ros_dev-aarch64:3.0
+FROM ${BASE_IMAGE}
+
+ARG LIBREALSENSE_SOURCE_VERSION=v2.55.1
+ARG REALSENSE_ROS_GIT_URL=https://github.com/NVIDIA-ISAAC-ROS/realsense-ros.git
+ARG REALSENSE_ROS_VERSION=release/4.51.1-isaac
+
+USER root
+
+COPY scripts/build-librealsense.sh /opt/realsense/build-librealsense.sh
+COPY scripts/install-realsense-dependencies.sh /opt/realsense/install-realsense-dependencies.sh
+
+RUN chmod +x /opt/realsense/install-realsense-dependencies.sh && \
+    /opt/realsense/install-realsense-dependencies.sh; \
+    chmod +x /opt/realsense/build-librealsense.sh && /opt/realsense/build-librealsense.sh -v ${LIBREALSENSE_SOURCE_VERSION};
+
+# Copy hotplug script for udev rules/hotplug for RealSense
+RUN mkdir -p /opt/realsense/
+COPY scripts/hotplug-realsense.sh /opt/realsense/hotplug-realsense.sh
+COPY udev_rules/99-realsense-libusb-custom.rules /etc/udev/rules.d/99-realsense-libusb-custom.rules
+
+RUN RUN udevadm control --reload-rules && udevadm trigger \
+    && chmod 666 /dev/bus/usb/*/* 2>/dev/null || true
+
+# Install realsense-ros ROS 2 package
+RUN --mount=type=cache,target=/var/cache/apt \
+    mkdir -p ${ROS_ROOT}/src && cd ${ROS_ROOT}/src \
+    && git clone ${REALSENSE_ROS_GIT_URL} -b ${REALSENSE_ROS_VERSION} \
+    && cd realsense-ros && bash -c "source ${ROS_ROOT}/setup.bash" \
+    && cd realsense2_camera_msgs && bloom-generate rosdebian && fakeroot debian/rules binary \
+    && cd ../ && apt-get install -y ./*.deb && rm ./*.deb \
+    && cd realsense2_description && bloom-generate rosdebian && fakeroot debian/rules binary \
+    && cd ../ && apt-get install -y ./*.deb && rm ./*.deb \
+    && cd realsense2_camera && bloom-generate rosdebian \
+    && sed -i 's/dh_shlibdeps -/dh_shlibdeps --dpkg-shlibdeps-params=--ignore-missing-info -/g' debian/rules \
+    && sed -i 's/ros-humble-librealsense2, //g' debian/control \
+    && fakeroot debian/rules binary \
+    && cd ../ && apt-get install -y ./*.deb && rm ./*.deb \
+    && cd ../ && rm -Rf realsense-ros
+    
+RUN usermod -a -G dialout,plugdev admin \
+    && apt update && sudo apt install usbutils
+
+RUN echo 'SUBSYSTEM=="usb", ATTRS{idVendor}=="8086", ATTRS{idProduct}=="0b3a|0b3d|0b3e|0b3f|0b40|0b41|0b42|0b43|0b48|0b49|0b4b|0b4d|0b4e|0b4f|0b50|0b51|0b52|0b53|0b54|0b55|0b56|0b57|0b58|0b59|0b5a|0b5b|0b5c|0b5d|0b5e|0b5f", MODE="0666"' > /etc/udev/rules.d/99-realsense-libusb.rules
+# RUN udevadm control --reload-rules && udevadm trigger
+RUN udevadm control --reload-rules || true && udevadm trigger || true
+USER $USERNAME
+在容器中手动运行以下命令，以便能够以非root用户访问Realsense 设备：
+sudo chmod 666 /dev/bus/usb/002/003
+或者在宿主机上运行：
+sudo udevadm control --reload-rules && sudo udevadm trigger

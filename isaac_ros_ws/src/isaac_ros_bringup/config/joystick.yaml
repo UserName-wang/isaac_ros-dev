@@ -1,0 +1,77 @@
+/**:
+  ros__parameters:
+    # 是否启用死区
+    enable_deadzone: true
+    # 死区值
+    deadzone: 0.05
+    # 是否启用自适应标度
+    enable_adaptive_scaling: false
+    # 标度参数
+    scale_linear:
+      x: 0.5
+      y: 0.0
+      z: 0.0
+    scale_angular:
+      roll: 0.0
+      pitch: 0.0
+      yaw: 0.5
+    
+    # Axis映射
+    axis_linear:
+      x: 1         # Axis 1 控制前进/后退
+      y: 0         # Axis 0 控制左右平移（本机器人不支持）
+      z: 0         # 不使用
+    axis_angular:
+      roll: 0      # 不使用
+      pitch: 0     # 不使用
+      yaw: 0       # Axis 0 控制左右旋转
+    
+    # 按钮映射
+    button_deadman: 6  # Button 6 用作使能按钮
+    
+    # 是否启用按钮控制
+    button_control_enabled: false
+    
+    # 是否启用turbo按钮
+    button_turbo: 7
+    scale_linear_turbo:
+      x: 1.0
+      y: 0.0
+      z: 0.0
+    scale_angular_turbo:
+      roll: 0.0
+      pitch: 0.0
+      yaw: 1.0
+
+teleop_twist_joy_node:
+  ros__parameters:
+    enable_deadzone: true
+    deadzone: 0.05
+    enable_adaptive_scaling: false
+    scale_linear:
+      x: 0.5
+      y: 0.0
+      z: 0.0
+    scale_angular:
+      roll: 0.0
+      pitch: 0.0
+      yaw: 0.5
+    axis_linear:
+      x: 1
+      y: 0
+      z: 0
+    axis_angular:
+      roll: 0
+      pitch: 0
+      yaw: 0
+    button_deadman: 6
+    button_control_enabled: false
+    button_turbo: 7
+    scale_linear_turbo:
+      x: 1.0
+      y: 0.0
+      z: 0.0
+    scale_angular_turbo:
+      roll: 0.0
+      pitch: 0.0
+      yaw: 1.0
