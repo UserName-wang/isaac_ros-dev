@@ -4,7 +4,7 @@ FROM isaac_ros_dev-aarch64:5.0
 ENV http_proxy=http://192.168.0.57:12346
 ENV https_proxy=http://192.168.0.57:12346
 ENV HF_ENDPOINT=https://hf-mirror.com
-ENV HUGGINGFACE_TOKEN=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
+ENV HUGGINGFACE_TOKEN=hf_VKElxXxMWFNeUdpvOtusabcd
 
 # ARG USERNAME=admin
 # ARG USER_UID=1000
